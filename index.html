@@ -65,7 +65,7 @@
   .progress { height: 4px; background: var(--surface-3); border-radius: 2px; overflow: hidden; margin-bottom: 16px; }
   .progress-bar { height: 100%; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); border-radius: 2px; }
   .progress-bar.ok { background: var(--success); } .progress-bar.warn { background: var(--warning); } .progress-bar.over { background: var(--danger); }
-  .slot { display: grid; grid-template-columns: 110px 110px 100px 1fr 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .slot { display: grid; grid-template-columns: 110px 110px 100px 1fr 1fr 140px auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .slot:last-child { border-bottom: none; padding-bottom: 0; } .slot:first-child { padding-top: 0; }
   .slot-label { display: flex; flex-direction: column; gap: 2px; }
   .slot-label .name { font-size: 13px; font-weight: 500; }
@@ -93,7 +93,6 @@
   .app-option .check { margin-left: auto; color: var(--accent); font-size: 13px; display: none; }
   .app-option.selected .check { display: block; }
   .app-option.divider { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 10px; color: var(--text-dim); }
-  /* Scope toggle pills */
   .scope-toggle { display: inline-flex; gap: 4px; padding: 3px; background: var(--surface-3); border-radius: 8px; border: 1px solid var(--border); }
   .scope-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 6px 14px; font-size: 12px; font-family: inherit; font-weight: 500; border-radius: 6px; transition: all 0.2s; white-space: nowrap; }
   .scope-btn:hover { color: var(--text); }
@@ -157,6 +156,27 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
   .empty { text-align: center; color: var(--text-faint); padding: 40px 20px; font-size: 13px; }
   .empty .empty-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.5; }
+  
+  /* Timer styles */
+  .timer-display { display: inline-flex; align-items: center; gap: 6px; background: var(--danger-soft); border: 1px solid var(--danger); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--danger); font-variant-numeric: tabular-nums; animation: pulse 2s infinite; }
+  .timer-display.work-timer { background: var(--work-soft); border-color: var(--work); color: var(--work); animation: pulse-work 2s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(248, 113, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); } }
+  @keyframes pulse-work { 0% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(96, 165, 250, 0); } 100% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0); } }
+  
+  /* Timer nel form off-protocol */
+  .op-timer-section {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  
+  .op-timer-active {
+    background: var(--danger-soft) !important;
+    border-color: var(--danger) !important;
+  }
+  
   @media (max-width: 900px) { .slot { grid-template-columns: 1fr 1fr; } .op-form { flex-direction: column; align-items: stretch; } .op-form > * { width: 100% !important; flex: none !important; } .op-entry { grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; } .history-row { grid-template-columns: 1fr 1fr; font-size: 12px; gap: 10px; padding: 12px; } .history-row.header { display: none; } }
   @media (max-width: 600px) { body { padding: 16px 12px; } .card { padding: 18px; } .slot { grid-template-columns: 1fr; } .settings-row { grid-template-columns: 1fr; gap: 8px; } .settings-header { display: none; } }
 </style>
@@ -179,6 +199,7 @@
       </div>
     </div>
     <div class="header-right">
+      <div id="timer-display-area" style="display:none;"></div>
       <div class="date-pill"><span class="dot"></span><span id="date-display"></span></div>
     </div>
   </div>
@@ -196,6 +217,18 @@
     </div>
     <div class="card">
       <div class="card-header"><div class="card-title"><div class="ico">⚠️</div> Off-protocol log</div><div class="card-subtitle">Any check outside your scheduled times</div></div>
+      
+      <!-- Off-protocol Timer Section -->
+      <div class="op-timer-section" id="op-timer-section">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div style="font-size: 13px; font-weight: 500; color: var(--text-dim);">⏱️ Off-protocol Timer:</div>
+          <button id="op-start-timer" class="small">▶ START</button>
+          <button id="op-stop-timer" class="small danger" style="display:none;">⏹ STOP & LOG</button>
+          <span id="op-timer-display" style="display:none; font-size: 14px; font-variant-numeric: tabular-nums; color: var(--danger); font-weight: 600;">00:00</span>
+          <span style="font-size: 11px; color: var(--text-faint);">(Auto-fills time & minutes)</span>
+        </div>
+      </div>
+      
       <div class="op-form" id="op-form">
         <div class="scope-toggle" id="scope-toggle">
           <button class="scope-btn active" data-scope="break">🔴 Break / Evasion</button>
@@ -203,7 +236,7 @@
         </div>
         <input type="time" id="op-time" />
         <div id="op-app-picker"></div>
-        <input type="number" id="op-mins" placeholder="Min" min="0" />
+        <input type="number" id="op-mins" placeholder="Min" min="0" step="0.1" />
         <input type="text" id="op-trigger" placeholder="Trigger (boredom, anxiety, notification...)" />
         <button id="op-add" class="large">+ Log</button>
       </div>
@@ -257,10 +290,15 @@ const STORAGE_KEY='focus_tracker_v2';
 const DEFAULT_CATEGORIES=[{id:'social',name:'Social Media / Metrics',maxChecks:2,maxMinutes:10,slots:['morning','evening']},{id:'email',name:'Email Inbox',maxChecks:2,maxMinutes:10,slots:['morning','evening']},{id:'sales',name:'Sales & Insights',maxChecks:2,maxMinutes:10,slots:['morning','evening']}];
 const SLOT_LABELS={morning:{name:'Morning',time:'12:30'},evening:{name:'Evening',time:'19:30'}};
 let state=loadState();
+
+// Timer states
+let activeTimers = {}; // key: "categoryId_slot"
+let opTimer = null; // { isRunning, startTime, intervalId, elapsedSeconds, startTimeStr }
+
 function loadState(){try{const saved=localStorage.getItem(STORAGE_KEY);if(saved){const s=JSON.parse(saved);if(!s.apps)s.apps=[...DEFAULT_APPS];if(!s.categories)s.categories=DEFAULT_CATEGORIES;if(!s.days)s.days={};return s;}}catch(e){console.error(e);}return{categories:DEFAULT_CATEGORIES,apps:[...DEFAULT_APPS],days:{}};}
 function saveState(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
 function todayKey(){return new Date().toISOString().slice(0,10);}
-function ensureToday(){const key=todayKey();if(!state.days[key]){state.days[key]={checkins:{},offProtocol:[]};}state.categories.forEach(cat=>{if(!state.days[key].checkins[cat.id]){state.days[key].checkins[cat.id]={};}cat.slots.forEach(slot=>{if(!state.days[key].checkins[cat.id][slot]){state.days[key].checkins[cat.id][slot]={minutes:null,appIds:[],reason:'',time:''};}});});saveState();return state.days[key];}
+function ensureToday(){const key=todayKey();if(!state.days[key]){state.days[key]={checkins:{},offProtocol:[]};}state.categories.forEach(cat=>{if(!state.days[key].checkins[cat.id]){state.days[key].checkins[cat.id]={};}cat.slots.forEach(slot=>{if(!state.days[key].checkins[cat.id][slot]){state.days[key].checkins[cat.id][slot]={minutes:null,appIds:[],reason:'',time:'',mode:'checking'};}});});saveState();return state.days[key];}
 function getApp(id){return state.apps.find(a=>a.id===id);}
 function el(tag,attrs,...children){attrs=attrs||{};const e=document.createElement(tag);Object.entries(attrs).forEach(([k,v])=>{if(k==='class')e.className=v;else if(k==='style'&&typeof v==='object')Object.assign(e.style,v);else if(k.startsWith('on'))e.addEventListener(k.slice(2).toLowerCase(),v);else if(k==='html')e.innerHTML=v;else if(v!==false&&v!=null)e.setAttribute(k,v);});children.forEach(c=>{if(c==null||c===false)return;if(typeof c==='string'||typeof c==='number')e.appendChild(document.createTextNode(String(c)));else e.appendChild(c);});return e;}
 function appIcon(app,size){size=size||20;if(!app)return el('div',{class:'app-icon',style:{background:'#555c6e',width:size+'px',height:size+'px'}},'?');return el('div',{class:'app-icon',style:{background:app.color,width:size+'px',height:size+'px',fontSize:Math.max(9,Math.floor(size*0.45))+'px'}},app.initial);}
@@ -269,8 +307,9 @@ function createAppPicker(currentIds,onChange,suggestedCategory){if(!Array.isArra
 const dropdown=el('div',{class:'app-picker-dropdown'});function renderDropdown(){dropdown.innerHTML='';const sortedApps=[...state.apps].sort((a,b)=>{if(suggestedCategory){if(a.category===suggestedCategory&&b.category!==suggestedCategory)return -1;if(b.category===suggestedCategory&&a.category!==suggestedCategory)return 1;}return a.name.localeCompare(b.name);});sortedApps.forEach(app=>{const isSelected=currentIds.includes(app.id);const opt=el('div',{class:'app-option'+(isSelected?' selected':'')});opt.appendChild(appIcon(app,22));opt.appendChild(el('span',{},app.name));opt.appendChild(el('span',{class:'check'},'✓'));opt.addEventListener('click',ev=>{ev.stopPropagation();if(isSelected){currentIds=currentIds.filter(i=>i!==app.id);}else{currentIds=[...currentIds,app.id];}onChange([...currentIds]);trigger.classList.toggle('active',currentIds.length>0);renderTrigger();renderDropdown();});dropdown.appendChild(opt);});const clearAll=el('div',{class:'app-option divider'});clearAll.appendChild(el('span',{style:{fontSize:'13px'}},'✕'));clearAll.appendChild(el('span',{},'Clear all'));clearAll.addEventListener('click',ev=>{ev.stopPropagation();currentIds=[];onChange([]);trigger.classList.remove('active');renderTrigger();renderDropdown();dropdown.classList.remove('open');});dropdown.appendChild(clearAll);}
 renderTrigger();renderDropdown();trigger.addEventListener('click',e=>{e.stopPropagation();document.querySelectorAll('.app-picker-dropdown.open').forEach(d=>d!==dropdown&&d.classList.remove('open'));dropdown.classList.toggle('open');});container.appendChild(trigger);container.appendChild(dropdown);return container;}
 document.addEventListener('click',()=>{document.querySelectorAll('.app-picker-dropdown.open').forEach(d=>d.classList.remove('open'));});
+
 // ---- SCOPE STATE ----
-let currentScope = 'break'; // 'break' | 'work'
+let currentScope = 'break';
 function setupScopeToggle() {
   const toggle = document.getElementById('scope-toggle');
   if (!toggle) return;
@@ -282,10 +321,413 @@ function setupScopeToggle() {
     });
   });
 }
+
+// ---- UTILITY: format seconds to MM:SS ----
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// ---- OFF-PROTOCOL TIMER ----
+function startOpTimer() {
+  if (opTimer && opTimer.isRunning) return;
+  
+  const now = new Date();
+  opTimer = {
+    isRunning: true,
+    startTime: Date.now(),
+    startTimeStr: now.toTimeString().slice(0, 5),
+    elapsedSeconds: 0,
+    intervalId: setInterval(updateOpTimer, 1000) // Aggiorna ogni secondo
+  };
+  
+  // Auto-fill time
+  document.getElementById('op-time').value = opTimer.startTimeStr;
+  
+  // UI update
+  document.getElementById('op-start-timer').style.display = 'none';
+  document.getElementById('op-stop-timer').style.display = 'inline-flex';
+  document.getElementById('op-timer-display').style.display = 'inline';
+  document.getElementById('op-timer-section').classList.add('op-timer-active');
+  
+  // Set scope
+  const activeScope = document.querySelector('#scope-toggle .scope-btn.active');
+  if (activeScope) currentScope = activeScope.dataset.scope;
+  
+  updateOpTimer();
+}
+
+function updateOpTimer() {
+  if (!opTimer || !opTimer.isRunning) return;
+  
+  opTimer.elapsedSeconds = Math.floor((Date.now() - opTimer.startTime) / 1000);
+  
+  // Update display with MM:SS
+  const display = document.getElementById('op-timer-display');
+  if (display) display.textContent = formatTime(opTimer.elapsedSeconds);
+  
+  // Update minutes input (arrotondato a 1 decimale)
+  const minsInput = document.getElementById('op-mins');
+  if (minsInput) minsInput.value = (opTimer.elapsedSeconds / 60).toFixed(1);
+  
+  updateGlobalTimerDisplay();
+}
+
+function stopOpTimer() {
+  if (!opTimer || !opTimer.isRunning) return;
+  
+  clearInterval(opTimer.intervalId);
+  
+  const totalMinutes = Math.max(0.1, parseFloat((opTimer.elapsedSeconds / 60).toFixed(1)));
+  
+  // Auto-fill minutes
+  document.getElementById('op-mins').value = totalMinutes;
+  
+  // Auto-log
+  const day = ensureToday();
+  const trigger = document.getElementById('op-trigger').value.trim();
+  
+  day.offProtocol.push({
+    time: opTimer.startTimeStr,
+    appIds: [...opSelectedAppIds],
+    minutes: totalMinutes,
+    trigger: trigger || 'Timer tracked',
+    scope: currentScope
+  });
+  
+  saveState();
+  
+  // Reset form
+  document.getElementById('op-time').value = '';
+  document.getElementById('op-mins').value = '';
+  document.getElementById('op-trigger').value = '';
+  opSelectedAppIds = [];
+  
+  resetOpTimer();
+  renderToday();
+}
+
+function resetOpTimer() {
+  if (opTimer && opTimer.intervalId) clearInterval(opTimer.intervalId);
+  opTimer = null;
+  
+  document.getElementById('op-start-timer').style.display = 'inline-flex';
+  document.getElementById('op-stop-timer').style.display = 'none';
+  document.getElementById('op-timer-display').style.display = 'none';
+  document.getElementById('op-timer-section').classList.remove('op-timer-active');
+  
+  updateGlobalTimerDisplay();
+}
+
+function initOpTimer() {
+  document.getElementById('op-start-timer').addEventListener('click', startOpTimer);
+  document.getElementById('op-stop-timer').addEventListener('click', stopOpTimer);
+}
+
+// ---- SLOT TIMER FUNCTIONS ----
+function startSlotTimer(catId, slot, maxMinutes, mode) {
+  const timerKey = catId + '_' + slot;
+  
+  // Stop existing timer
+  if (activeTimers[timerKey]) stopSlotTimer(catId, slot);
+  
+  const day = ensureToday();
+  const checkin = day.checkins[catId][slot];
+  const now = new Date();
+  checkin.time = now.toTimeString().slice(0, 5);
+  checkin.mode = mode || 'checking';
+  
+  activeTimers[timerKey] = {
+    startTime: Date.now(),
+    elapsedSeconds: 0,
+    intervalId: setInterval(() => updateSlotTimer(catId, slot, maxMinutes, mode), 1000), // Aggiorna ogni secondo
+    maxMinutes: maxMinutes,
+    mode: mode || 'checking',
+    warningFired: false
+  };
+  
+  saveState();
+  renderToday();
+}
+
+function updateSlotTimer(catId, slot, maxMinutes, mode) {
+  const timerKey = catId + '_' + slot;
+  const timer = activeTimers[timerKey];
+  if (!timer) return;
+  
+  timer.elapsedSeconds = Math.floor((Date.now() - timer.startTime) / 1000);
+  
+  // Update checkin minutes
+  const day = ensureToday();
+  const checkin = day.checkins[catId][slot];
+  checkin.minutes = parseFloat((timer.elapsedSeconds / 60).toFixed(1));
+  saveState();
+  
+  // Update timer display
+  const timerDisplay = document.getElementById('timer-' + timerKey);
+  if (timerDisplay) timerDisplay.textContent = formatTime(timer.elapsedSeconds);
+  
+  // Update minutes input
+  const minutesInput = document.getElementById('minutes-' + timerKey);
+  if (minutesInput) minutesInput.value = checkin.minutes;
+  
+  // Update time input
+  const timeInput = document.getElementById('time-' + timerKey);
+  if (timeInput && checkin.time) timeInput.value = checkin.time;
+  
+  // Warning alarm
+  if (mode === 'checking' && !timer.warningFired && timer.elapsedSeconds >= maxMinutes * 60) {
+    timer.warningFired = true;
+    playAlarm(maxMinutes);
+  }
+  
+  updateGlobalTimerDisplay();
+}
+
+function stopSlotTimer(catId, slot) {
+  const timerKey = catId + '_' + slot;
+  const timer = activeTimers[timerKey];
+  if (!timer) return;
+  
+  clearInterval(timer.intervalId);
+  
+  const day = ensureToday();
+  const checkin = day.checkins[catId][slot];
+  checkin.minutes = Math.max(0.1, parseFloat((timer.elapsedSeconds / 60).toFixed(1)));
+  
+  delete activeTimers[timerKey];
+  saveState();
+  renderToday();
+}
+
+function toggleSlotTimer(catId, slot, maxMinutes, mode, apps) {
+  const timerKey = catId + '_' + slot;
+  
+  if (activeTimers[timerKey]) {
+    stopSlotTimer(catId, slot);
+  } else {
+    const day = ensureToday();
+    const checkin = day.checkins[catId][slot];
+    checkin.appIds = apps || [];
+    startSlotTimer(catId, slot, maxMinutes, mode);
+  }
+}
+
+function playAlarm(maxMinutes) {
+  const timerDisplayArea = document.getElementById('timer-display-area');
+  if (timerDisplayArea) {
+    timerDisplayArea.style.display = 'block';
+    timerDisplayArea.innerHTML = `<div class="timer-display" style="font-size:14px;">⏰ ${maxMinutes} MIN LIMIT!</div>`;
+    setTimeout(() => {
+      updateGlobalTimerDisplay();
+    }, 5000);
+  }
+  
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = 800;
+        osc.type = 'square';
+        gain.gain.value = 0.15;
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        osc.stop(audioCtx.currentTime + 0.3);
+      }, i * 400);
+    }
+  } catch(e) {}
+}
+
+function updateGlobalTimerDisplay() {
+  const area = document.getElementById('timer-display-area');
+  
+  // Priorità: off-protocol timer
+  if (opTimer && opTimer.isRunning) {
+    area.style.display = 'block';
+    const isWork = currentScope === 'work';
+    area.innerHTML = `<div class="timer-display${isWork ? ' work-timer' : ''}">⏱️ OP ${formatTime(opTimer.elapsedSeconds)} ${isWork ? '(Work)' : '(Break)'}</div>`;
+    return;
+  }
+  
+  // Poi slot timers
+  const keys = Object.keys(activeTimers);
+  if (keys.length === 0) {
+    area.style.display = 'none';
+    return;
+  }
+  
+  const timer = activeTimers[keys[0]];
+  const isWork = timer.mode === 'working';
+  area.style.display = 'block';
+  area.innerHTML = `<div class="timer-display${isWork ? ' work-timer' : ''}">⏱️ ${formatTime(timer.elapsedSeconds)} ${isWork ? '(Work)' : '(Check)'}</div>`;
+}
+
 // ---- RENDER TODAY ----
-function renderToday(){document.getElementById('date-display').textContent=formatDate(new Date());const day=ensureToday();let totalMinutes=0,totalChecks=0,overLimit=0;state.categories.forEach(cat=>{cat.slots.forEach(slot=>{const c=day.checkins[cat.id]&&day.checkins[cat.id][slot];if(c&&c.minutes!=null&&c.minutes>0){totalMinutes+=Number(c.minutes);totalChecks++;if(Number(c.minutes)>cat.maxMinutes)overLimit++;}});});const opBreakTotal=day.offProtocol.filter(e=>e.scope!=='work').reduce((s,e)=>s+Number(e.minutes||0),0);const opWorkTotal=day.offProtocol.filter(e=>e.scope==='work').reduce((s,e)=>s+Number(e.minutes||0),0);const opBreakCount=day.offProtocol.filter(e=>e.scope!=='work').length;const opWorkCount=day.offProtocol.filter(e=>e.scope==='work').length;const clean=opBreakCount===0&&overLimit===0;const stats=document.getElementById('today-stats');stats.innerHTML='';stats.appendChild(buildStat('Scheduled time',totalMinutes+' min',totalChecks+' check-in'+(totalChecks===1?'':'s'),'⏱',null));stats.appendChild(buildStat('Breaks / Evasion',opBreakTotal+' min',opBreakCount+' incident'+(opBreakCount===1?'':'s'),'⚠',opBreakCount===0?'success':'danger'));stats.appendChild(buildStat('Work-related',opWorkTotal+' min',opWorkCount+' incident'+(opWorkCount===1?'':'s'),'💼',opWorkCount>0?'work':null));stats.appendChild(buildStat('Over limit',overLimit,overLimit===0?'within bounds':'reduce next time','📊',overLimit===0?'success':'danger'));stats.appendChild(buildStat('Protocol',clean?'Respected':'Broken',clean?'clean day so far':'tomorrow is new',clean?'✓':'✗',clean?'success':'warning'));const container=document.getElementById('categories-container');container.innerHTML='';state.categories.forEach(cat=>container.appendChild(buildCategory(cat,day)));renderOpForm();renderOpLog(day);setupScopeToggle();}
+function renderToday(){
+  document.getElementById('date-display').textContent=formatDate(new Date());
+  const day=ensureToday();
+  let totalMinutes=0,totalChecks=0,overLimit=0;
+  state.categories.forEach(cat=>{cat.slots.forEach(slot=>{const c=day.checkins[cat.id]&&day.checkins[cat.id][slot];if(c&&c.minutes!=null&&c.minutes>0){totalMinutes+=Number(c.minutes);totalChecks++;if(Number(c.minutes)>cat.maxMinutes)overLimit++;}});});
+  const opBreakTotal=day.offProtocol.filter(e=>e.scope!=='work').reduce((s,e)=>s+Number(e.minutes||0),0);
+  const opWorkTotal=day.offProtocol.filter(e=>e.scope==='work').reduce((s,e)=>s+Number(e.minutes||0),0);
+  const opBreakCount=day.offProtocol.filter(e=>e.scope!=='work').length;
+  const opWorkCount=day.offProtocol.filter(e=>e.scope==='work').length;
+  const clean=opBreakCount===0&&overLimit===0;
+  const stats=document.getElementById('today-stats');
+  stats.innerHTML='';
+  stats.appendChild(buildStat('Scheduled time',totalMinutes+' min',totalChecks+' check-in'+(totalChecks===1?'':'s'),'⏱',null));
+  stats.appendChild(buildStat('Breaks / Evasion',opBreakTotal+' min',opBreakCount+' incident'+(opBreakCount===1?'':'s'),'⚠',opBreakCount===0?'success':'danger'));
+  stats.appendChild(buildStat('Work-related',opWorkTotal+' min',opWorkCount+' incident'+(opWorkCount===1?'':'s'),'💼',opWorkCount>0?'work':null));
+  stats.appendChild(buildStat('Over limit',overLimit,overLimit===0?'within bounds':'reduce next time','📊',overLimit===0?'success':'danger'));
+  stats.appendChild(buildStat('Protocol',clean?'Respected':'Broken',clean?'clean day so far':'tomorrow is new',clean?'✓':'✗',clean?'success':'warning'));
+  const container=document.getElementById('categories-container');
+  container.innerHTML='';
+  state.categories.forEach(cat=>container.appendChild(buildCategory(cat,day)));
+  renderOpForm();
+  renderOpLog(day);
+  setupScopeToggle();
+  initOpTimer();
+  
+  // Restore op timer UI if running
+  if (opTimer && opTimer.isRunning) {
+    document.getElementById('op-start-timer').style.display = 'none';
+    document.getElementById('op-stop-timer').style.display = 'inline-flex';
+    document.getElementById('op-timer-display').style.display = 'inline';
+    document.getElementById('op-timer-section').classList.add('op-timer-active');
+    document.getElementById('op-timer-display').textContent = formatTime(opTimer.elapsedSeconds);
+  }
+  
+  updateGlobalTimerDisplay();
+}
+
 function buildStat(label,value,meta,icon,variant){const card=el('div',{class:'stat-card'});const header=el('div',{class:'stat-header'});header.appendChild(el('div',{class:'stat-label'},label));header.appendChild(el('div',{class:'stat-icon'+(variant?' '+variant:'')},icon));card.appendChild(header);card.appendChild(el('div',{class:'stat-value'},String(value)));if(meta)card.appendChild(el('div',{class:'stat-meta'+(variant?' '+variant:'')},meta));return card;}
-function buildCategory(cat,day){const wrap=el('div',{class:'category'});const header=el('div',{class:'category-header'});header.appendChild(el('div',{class:'category-name'},cat.name));const slotsUsed=cat.slots.filter(s=>{const c=day.checkins[cat.id]&&day.checkins[cat.id][s];return c&&c.minutes!=null&&c.minutes>0;}).length;const anyOver=cat.slots.some(s=>{const c=day.checkins[cat.id]&&day.checkins[cat.id][s];return c&&c.minutes!=null&&Number(c.minutes)>cat.maxMinutes;});let badgeClass='ok',badgeText=slotsUsed+'/'+cat.maxChecks;if(anyOver){badgeClass='over';badgeText='Over limit';}else if(slotsUsed>=cat.maxChecks){badgeClass='warn';badgeText='Full';}const info=el('div',{class:'category-info'});info.appendChild(el('span',{class:'category-limit'},cat.maxChecks+'× · '+cat.maxMinutes+'m max'));info.appendChild(el('span',{class:'badge '+badgeClass},badgeText));header.appendChild(info);wrap.appendChild(header);const totalUsed=cat.slots.reduce((s,slot)=>{const c=day.checkins[cat.id]&&day.checkins[cat.id][slot];return s+(c&&c.minutes?Number(c.minutes):0);},0);const totalMax=cat.maxChecks*cat.maxMinutes;const pct=Math.min(100,(totalUsed/totalMax)*100);const progress=el('div',{class:'progress'});progress.appendChild(el('div',{class:'progress-bar '+badgeClass,style:{width:pct+'%'}}));wrap.appendChild(progress);cat.slots.forEach(slot=>{const c=day.checkins[cat.id][slot];const row=el('div',{class:'slot'});const lbl=el('div',{class:'slot-label'});lbl.appendChild(el('div',{class:'name'},SLOT_LABELS[slot]?SLOT_LABELS[slot].name:slot));lbl.appendChild(el('div',{class:'time-hint'},SLOT_LABELS[slot]?SLOT_LABELS[slot].time:''));row.appendChild(lbl);const timeIn=el('input',{type:'time',value:c.time||''});timeIn.addEventListener('change',e=>{c.time=e.target.value;saveState();});row.appendChild(timeIn);const minIn=el('input',{type:'number',placeholder:'Min',min:'0',value:c.minutes!=null?c.minutes:''});minIn.addEventListener('change',e=>{c.minutes=e.target.value===''?null:Number(e.target.value);saveState();renderToday();});row.appendChild(minIn);row.appendChild(createAppPicker(c.appIds||[],(ids)=>{c.appIds=ids;saveState();},cat.id));const reason=el('input',{type:'text',placeholder:'Reason / note',value:c.reason||''});reason.addEventListener('change',e=>{c.reason=e.target.value;saveState();});row.appendChild(reason);const clearBtn=el('button',{class:'icon-only',title:'Clear',onclick:()=>{c.minutes=null;c.appIds=[];c.reason='';c.time='';saveState();renderToday();}},'✕');row.appendChild(clearBtn);wrap.appendChild(row);});return wrap;}
+
+function buildCategory(cat,day){
+  const wrap=el('div',{class:'category'});
+  const header=el('div',{class:'category-header'});
+  header.appendChild(el('div',{class:'category-name'},cat.name));
+  const slotsUsed=cat.slots.filter(s=>{const c=day.checkins[cat.id]&&day.checkins[cat.id][s];return c&&c.minutes!=null&&c.minutes>0;}).length;
+  const anyOver=cat.slots.some(s=>{const c=day.checkins[cat.id]&&day.checkins[cat.id][s];return c&&c.minutes!=null&&Number(c.minutes)>cat.maxMinutes;});
+  let badgeClass='ok',badgeText=slotsUsed+'/'+cat.maxChecks;
+  if(anyOver){badgeClass='over';badgeText='Over limit';}else if(slotsUsed>=cat.maxChecks){badgeClass='warn';badgeText='Full';}
+  const info=el('div',{class:'category-info'});
+  info.appendChild(el('span',{class:'category-limit'},cat.maxChecks+'× · '+cat.maxMinutes+'m max'));
+  info.appendChild(el('span',{class:'badge '+badgeClass},badgeText));
+  header.appendChild(info);
+  wrap.appendChild(header);
+  const totalUsed=cat.slots.reduce((s,slot)=>{const c=day.checkins[cat.id]&&day.checkins[cat.id][slot];return s+(c&&c.minutes?Number(c.minutes):0);},0);
+  const totalMax=cat.maxChecks*cat.maxMinutes;
+  const pct=Math.min(100,(totalUsed/totalMax)*100);
+  const progress=el('div',{class:'progress'});
+  progress.appendChild(el('div',{class:'progress-bar '+badgeClass,style:{width:pct+'%'}}));
+  wrap.appendChild(progress);
+  
+  cat.slots.forEach(slot=>{
+    const c=day.checkins[cat.id][slot];
+    const timerKey = cat.id + '_' + slot;
+    const isTimerActive = !!activeTimers[timerKey];
+    const timerMode = c.mode || 'checking';
+    
+    const row=el('div',{class:'slot'});
+    const lbl=el('div',{class:'slot-label'});
+    lbl.appendChild(el('div',{class:'name'},SLOT_LABELS[slot]?SLOT_LABELS[slot].name:slot));
+    lbl.appendChild(el('div',{class:'time-hint'},SLOT_LABELS[slot]?SLOT_LABELS[slot].time:''));
+    row.appendChild(lbl);
+    
+    const timeIn=el('input',{type:'time',value:c.time||'', id:'time-'+timerKey});
+    timeIn.addEventListener('change',e=>{c.time=e.target.value;saveState();});
+    row.appendChild(timeIn);
+    
+    const minIn=el('input',{type:'number',placeholder:'Min',min:'0',step:'0.1',value:c.minutes!=null?c.minutes:'',id:'minutes-'+timerKey});
+    minIn.addEventListener('change',e=>{c.minutes=e.target.value===''?null:Number(e.target.value);saveState();renderToday();});
+    row.appendChild(minIn);
+    
+    row.appendChild(createAppPicker(c.appIds||[],(ids)=>{c.appIds=ids;saveState();},cat.id));
+    
+    const reason=el('input',{type:'text',placeholder:'Reason / note',value:c.reason||''});
+    reason.addEventListener('change',e=>{c.reason=e.target.value;saveState();});
+    row.appendChild(reason);
+    
+    // Mode toggle + Timer button + Timer display
+    const modeAndTimerDiv = el('div', {style: {display:'flex', gap:'4px', alignItems:'center', flexWrap:'wrap'}});
+    
+    const modeToggle = el('button', {
+      class: 'small ghost',
+      style: {
+        background: timerMode === 'working' ? 'var(--work-soft)' : 'var(--danger-soft)',
+        color: timerMode === 'working' ? 'var(--work)' : 'var(--danger)',
+        borderColor: timerMode === 'working' ? 'var(--work)' : 'var(--danger)',
+        fontSize: '10px',
+        padding: '4px 6px',
+        minWidth: '65px'
+      }
+    }, timerMode === 'working' ? '🔵 WORK' : '🔴 CHECK');
+    
+    modeToggle.addEventListener('click', () => {
+      if (isTimerActive) stopSlotTimer(cat.id, slot);
+      c.mode = c.mode === 'checking' ? 'working' : 'checking';
+      saveState();
+      renderToday();
+    });
+    
+    modeAndTimerDiv.appendChild(modeToggle);
+    
+    const timerBtn = el('button', {
+      class: 'small',
+      style: {
+        background: isTimerActive ? 'var(--danger)' : 'var(--surface-2)',
+        color: isTimerActive ? 'white' : 'var(--text-dim)',
+        border: '1px solid ' + (isTimerActive ? 'var(--danger)' : 'var(--border)'),
+        fontSize: '10px',
+        padding: '4px 6px'
+      }
+    }, isTimerActive ? '⏹ STOP' : '▶ START');
+    
+    timerBtn.addEventListener('click', () => {
+      toggleSlotTimer(cat.id, slot, cat.maxMinutes, c.mode, c.appIds || []);
+    });
+    
+    modeAndTimerDiv.appendChild(timerBtn);
+    
+    // Timer display with MM:SS
+    if (isTimerActive) {
+      const timer = activeTimers[timerKey];
+      const display = el('span', {
+        id: 'timer-' + timerKey,
+        style: {
+          fontSize: '12px',
+          fontWeight: '700',
+          color: timerMode === 'working' ? 'var(--work)' : 'var(--danger)',
+          fontVariantNumeric: 'tabular-nums',
+          background: timerMode === 'working' ? 'var(--work-soft)' : 'var(--danger-soft)',
+          padding: '2px 6px',
+          borderRadius: '4px',
+          border: '1px solid ' + (timerMode === 'working' ? 'var(--work)' : 'var(--danger)')
+        }
+      }, formatTime(timer.elapsedSeconds));
+      modeAndTimerDiv.appendChild(display);
+    }
+    
+    row.appendChild(modeAndTimerDiv);
+    
+    const clearBtn=el('button',{class:'icon-only',title:'Clear',onclick:()=>{
+      if (activeTimers[timerKey]) stopSlotTimer(cat.id, slot);
+      c.minutes=null;c.appIds=[];c.reason='';c.time='';c.mode='checking';
+      saveState();renderToday();
+    }},'✕');
+    row.appendChild(clearBtn);
+    
+    wrap.appendChild(row);
+  });
+  
+  return wrap;
+}
+
 let opSelectedAppIds=[];
 function renderOpForm(){const pickerSlot=document.getElementById('op-app-picker');pickerSlot.innerHTML='';pickerSlot.appendChild(createAppPicker(opSelectedAppIds,(ids)=>{opSelectedAppIds=ids;}));}
 function renderOpLog(day){const log=document.getElementById('op-log');log.innerHTML='';if(!day.offProtocol.length){log.appendChild(el('div',{class:'empty'},el('div',{class:'empty-icon'},'✓'),'No off-protocol incidents today. Keep it up.'));return;}day.offProtocol.slice().reverse().forEach((entry,revIdx)=>{const idx=day.offProtocol.length-1-revIdx;const scope=entry.scope||'break';const appIds=entry.appIds||(entry.appId?[entry.appId]:[]);const row=el('div',{class:'op-entry'+(scope==='work'?' work-entry':'')});row.appendChild(el('div',{class:'time'},entry.time||'—'));const appDisp=el('div',{class:'app-display'});if(appIds.length>0){appIds.forEach(id=>{const app=getApp(id);if(app){appDisp.appendChild(appIcon(app,20));}});const names=appIds.map(id=>{const a=getApp(id);return a?a.name:'';}).filter(Boolean).join(', ');appDisp.appendChild(el('span',{},names));}else{appDisp.appendChild(el('span',{style:{color:'var(--text-faint)'}},'—'));}row.appendChild(appDisp);const minsClass = scope === 'work' ? 'mins work' : 'mins break';row.appendChild(el('div',{class: minsClass},(entry.minutes||0)+'m'));row.appendChild(el('div',{class:'trigger'},entry.trigger||'—'));const scopeBadge = el('div',{class:'scope-badge '+(scope==='work'?'work':'break')},scope==='work'?'WORK':'BREAK');row.appendChild(scopeBadge);row.appendChild(el('button',{class:'icon-only',title:'Remove',onclick:()=>{day.offProtocol.splice(idx,1);saveState();renderToday();}},'✕'));log.appendChild(row);});}
